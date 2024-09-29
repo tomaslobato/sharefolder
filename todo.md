@@ -1,0 +1,5 @@
+- [ ] open/close aside
+- [x] see file content
+- [x] remove file/folder
+- [ ] edit filenames
+- [ ] text editor

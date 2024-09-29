@@ -38,10 +38,11 @@ li:hover {
 }
 
 aside {
-    width: 275px;
+    min-width: 275px;
     height: 100vh;
     border-right: 2px solid black;
-    padding: 8px
+    padding: 8px;
+    box-sizing: border-box;
 }
 
 .top {
@@ -83,9 +84,9 @@ aside {
     border: none;
     background-color: transparent;
     color: white;
-    border: 2px solid rgb(71, 71, 71);
     padding: 1px;
     border-radius: 4px;
+    border: none
 }
 
 .newbtn:hover {
@@ -95,4 +96,54 @@ aside {
 
 .child {
     padding-right: 20px;
+}
+
+.file {
+    display: flex;
+    justify-content: space-between;
+}
+
+.removebtn:hover {
+    background-color: rgb(179, 0, 0);
+    cursor: pointer
+}
+
+.removebtn {
+    background-color: transparent;
+    padding: 1px;
+    color: white;
+    border-radius: 4px;
+    border: none
+}
+
+.main {
+    display: flex;
+}
+
+.editor {
+    width: 100%;
+}
+
+.editor header {
+    height: 10%;
+    box-sizing: border-box;
+    border-bottom: 1px solid black;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+textarea {
+    width: 100%;
+    outline: none;
+    font-family: sans-serif;
+    font-size: 20px;
+    padding: 40px 40px;
+    box-sizing: border-box;
+    height: 90%;
+}
+
+.savebtn {
+    font-size: 24px             
 }

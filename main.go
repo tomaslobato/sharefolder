@@ -24,5 +24,9 @@ func main() {
 
 	app.Post("/create", server.HandleNewFile)
 
+	app.Delete("/remove/:id", server.HandleDeleteFile)
+
+	app.Get("/getcontent/:id", server.HandleGetContent)
+
 	app.Listen(":3000")
 }

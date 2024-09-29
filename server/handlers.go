@@ -3,13 +3,14 @@ package server
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-const ROOT = "/home/tomi/Documents/new/"
+const ROOT = "/home/tomi/Documents/new/" // /app/new
 
 type NewFileRequest struct {
 	Name   string `json:"name"`
@@ -89,6 +90,54 @@ func HandleNewFile(c *fiber.Ctx) error {
 func HandleGetFiles(c *fiber.Ctx) error {
 	files := recursiveSetFiles(ROOT, "")
 	return c.JSON(files)
+}
+
+func HandleDeleteFile(c *fiber.Ctx) error {
+	encodedId := c.Params("id")
+
+	id, err := url.QueryUnescape(encodedId)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid ID format",
+		})
+	}
+
+	path := filepath.Join(ROOT, id)
+
+	err = os.Remove(path)
+	if err != nil {
+		msg := fmt.Sprintf("failed to delete file at %s", id)
+		return c.JSON(fiber.Map{
+			"error": msg,
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": "file removed",
+	})
+}
+
+func HandleGetContent(c *fiber.Ctx) error {
+	encodedId := c.Params("id")
+
+	id, err := url.QueryUnescape(encodedId)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid ID format",
+		})
+	}
+
+	path := filepath.Join(ROOT, id)
+
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	c.Set("Content-Type", "text/plain")
+	return c.SendString(string(content))
 }
 
 func recursiveSetFiles(dir string, childChain string) []File {
