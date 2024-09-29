@@ -28,5 +28,7 @@ func main() {
 
 	app.Get("/getcontent/:id", server.HandleGetContent)
 
+	app.Post("/save/:id", server.HandleSaveContent)
+
 	app.Listen(":3000")
 }

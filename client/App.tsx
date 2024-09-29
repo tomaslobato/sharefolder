@@ -1,28 +1,39 @@
 import React, { useState } from "react"
 import Sidebar from "./components/Sidebar"
+import { ChevronsLeftIcon, ChevronsRightIcon } from "lucide-react"
 
 export default function App() {
     const [fileId, setFileId] = useState<string>()
     const [content, setContent] = useState("")
+    const [isOpen, setIsOpen] = useState(true)
 
-    function SaveNewContent() {
+    async function SaveNewContent() {
         const encodedId = encodeURIComponent(fileId!)
 
-        fetch(`/save/${encodedId}`, {
+        const res = await fetch(`/save/${encodedId}`, {
             method: "post",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "text/plain"
             },
             body: content
         })
+        const json = await res.json()
     }
 
     return (
         <div className="main">
-            <Sidebar setContent={setContent} setFileId={setFileId} />
+            <Sidebar setContent={setContent} setFileId={setFileId} isOpen={isOpen}/>
             <main className="editor">
-                <header><h1>{fileId ? fileId : "select a file"}</h1><button className="savebtn">Save</button></header>
-                <textarea name="" id="" value={content} className="editor" onChange={(ev) => setContent(ev.target.value)}></textarea>
+                <header>
+                    <div style={{display:"flex", gap: "10px"}}>
+                        <button className="sidebarbtn" onClick={() => setIsOpen(!isOpen)}>
+                            {isOpen ? <ChevronsLeftIcon /> : <ChevronsRightIcon />}
+                        </button >
+                        <h1>{fileId ? fileId : "select a file"}</h1>
+                    </div>
+                    <button className="savebtn" onClick={SaveNewContent}>Save</button>
+                </header>
+                {fileId && <textarea name="editor" id="editor" value={content} onChange={(ev) => setContent(ev.target.value)} />}
             </main>
         </div>
     )

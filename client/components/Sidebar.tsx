@@ -1,5 +1,5 @@
 import React, { Fragment, useEffect, useState } from "react"
-import { ChevronDownIcon, ChevronRightIcon, FilePlusIcon, FolderPlusIcon, Trash2Icon, XIcon } from "lucide-react"
+import { ChevronDownIcon, ChevronRightIcon, ChevronsLeft, ChevronsRightIcon, FilePlusIcon, FolderPlusIcon, Trash2Icon, XIcon } from "lucide-react"
 
 type File = {
     name: string
@@ -17,30 +17,30 @@ type InputOpen = {
 type Props = {
     setContent: React.Dispatch<React.SetStateAction<string>>
     setFileId: React.Dispatch<string>
+    isOpen: boolean
 }
 
-export default function Sidebar({ setContent, setFileId }: Props) {
+export default function Sidebar({ setContent, setFileId, isOpen }: Props) {
     const [files, setFiles] = useState<File[] | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [inputOpen, setInputOpen] = useState<InputOpen>({ open: false, type: "file" })
     const [input, setInput] = useState("")
     const [selectedDir, setSelectedDir] = useState<File | null>(null)
 
-    useEffect(() => {
-        async function getFiles() {
-            try {
-                const res = await fetch("/getfiles")
-                if (!res.ok) {
-                    throw new Error("Failed to fetch files")
-                }
-                const json = await res.json()
-                console.log(json)
-                setFiles(json)
-            } catch (err) {
-                setError("Error loading files")
+    async function getFiles() {
+        try {
+            const res = await fetch("/getfiles")
+            if (!res.ok) {
+                throw new Error("Failed to fetch files")
             }
+            const json = await res.json()
+            setFiles(json)
+        } catch (err) {
+            setError("Error loading files")
         }
+    }
 
+    useEffect(() => {
         getFiles()
     }, [])
 
@@ -78,7 +78,7 @@ export default function Sidebar({ setContent, setFileId }: Props) {
         })
         const json = await res.json()
 
-        console.log(json)
+        getFiles()
     }
 
     async function getFileContent(id: string) {
@@ -148,52 +148,64 @@ export default function Sidebar({ setContent, setFileId }: Props) {
                 })
             })
             const json = await res.json()
+            console.log(json)
 
             setInput("")
             setInputOpen({ open: false, type: "file" })
+            getFiles()
         } catch (err) {
             console.error(err)
         }
     }
 
     return (
-        <aside>
-            <h1>Your Folder</h1>
-            <div className="top">
-                {inputOpen.open ? (
-                    <form onSubmit={(ev) => {
-                        ev.preventDefault()
-                        createFile(selectedDir?.id || "")
-                    }}>
-                        <span>new {inputOpen?.type} at {selectedDir ? selectedDir.name : "root"}</span>
-                        <div>
-                            <input type="text" onChange={(ev) => setInput(ev.target.value)} />
-                            <button style={{ padding: 0 }} onClick={() => {
-                                setSelectedDir(null)
-                                setInput("")
-                                setInputOpen({ open: false, type: "file" })
-                            }}>
-                                <XIcon />
-                            </button>
-                            <button type="submit">Create</button>
-                        </div>
-                    </form>
-                ) : (
-                    <div style={{ display: "flex", gap: "8px" }}>
-                        <button onClick={() => setInputOpen({ open: true, type: "file" })}><FilePlusIcon /></button>
-                        <button onClick={() => setInputOpen({ open: true, type: "dir" })}><FolderPlusIcon /></button>
+        <>
+            {isOpen ? (
+                <aside>
+                    <div>
+                        <h1>Your Folder</h1>
                     </div>
-                )}
-            </div>
-            <ul>
-                {files && files.map((file) => (
-                    <Fragment key={file.id}>
-                        {file.id.includes("/") && !isParentOpen(file.id) ? null : renderIt(file, file.id.includes("/"))}
-                    </Fragment>
-                )
-                )}
+                    <header>
+                        {inputOpen.open ? (
+                            <form onSubmit={(ev) => {
+                                ev.preventDefault()
+                                createFile(selectedDir?.id || "")
+                            }}>
+                                <span>new {inputOpen?.type} at {selectedDir ? selectedDir.name : "root"}</span>
+                                <div>
+                                    <button type="button" style={{ padding: 0 }} onClick={() => {
+                                        setSelectedDir(null)
+                                        setInput("")
+                                        setInputOpen({ open: false, type: "file" })
+                                    }}>
+                                        <XIcon />
+                                    </button>
+                                    <input type="text" onChange={(ev) => setInput(ev.target.value)} />
 
-            </ul>
-        </aside >
+                                    <button type="submit">Create</button>
+                                </div>
+                            </form>
+                        ) : (
+                            <div style={{ display: "flex", gap: "8px" }}>
+                                <button onClick={() => setInputOpen({ open: true, type: "file" })}><FilePlusIcon /></button>
+                                <button onClick={() => setInputOpen({ open: true, type: "dir" })}><FolderPlusIcon /></button>
+                            </div>
+                        )}
+                    </header>
+                    <ul>
+                        {files && files.map((file) => (
+                            <Fragment key={file.id}>
+                                {file.id.includes("/") && !isParentOpen(file.id) ? null : renderIt(file, file.id.includes("/"))}
+                            </Fragment>
+                        )
+                        )}
+
+                    </ul>
+                </aside>
+            ) : (
+                <></>
+            )
+            }
+        </>
     )
 }

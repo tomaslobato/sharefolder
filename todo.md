@@ -2,4 +2,4 @@
 - [x] see file content
 - [x] remove file/folder
 - [ ] edit filenames
-- [ ] text editor
+- [ ] text editor   

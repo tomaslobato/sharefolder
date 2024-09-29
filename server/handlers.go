@@ -39,7 +39,7 @@ func HandleFrontRoutes(app *fiber.App, routes []string) {
 func HandleNewFile(c *fiber.Ctx) error {
 	var req NewFileRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		return c.Status(400).JSON(fiber.Map{
 			"error": "Invalid request body",
 		})
 	}
@@ -97,7 +97,7 @@ func HandleDeleteFile(c *fiber.Ctx) error {
 
 	id, err := url.QueryUnescape(encodedId)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		return c.Status(400).JSON(fiber.Map{
 			"error": "Invalid ID format",
 		})
 	}
@@ -106,7 +106,7 @@ func HandleDeleteFile(c *fiber.Ctx) error {
 
 	err = os.Remove(path)
 	if err != nil {
-		msg := fmt.Sprintf("failed to delete file at %s", id)
+		msg := fmt.Sprintf("failed to delete %s", id)
 		return c.JSON(fiber.Map{
 			"error": msg,
 		})
@@ -122,7 +122,7 @@ func HandleGetContent(c *fiber.Ctx) error {
 
 	id, err := url.QueryUnescape(encodedId)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		return c.Status(400).JSON(fiber.Map{
 			"error": "Invalid ID format",
 		})
 	}
@@ -138,6 +138,38 @@ func HandleGetContent(c *fiber.Ctx) error {
 
 	c.Set("Content-Type", "text/plain")
 	return c.SendString(string(content))
+}
+
+func HandleSaveContent(c *fiber.Ctx) error {
+	encodedId := c.Params("id")
+
+	id, err := url.QueryUnescape(encodedId)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid ID format",
+		})
+	}
+
+	newContent := c.Body()
+
+	path := filepath.Join(ROOT, id)
+
+	file, err := os.Create(path)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to write file",
+		})
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(string(newContent))
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Failed to write file",
+		})
+	}
+
+	return c.JSON(fiber.Map{"success": "file written"})
 }
 
 func recursiveSetFiles(dir string, childChain string) []File {
